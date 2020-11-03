@@ -36,15 +36,31 @@ namespace ProjectorFix
 
             var grid = projectedGrids[0];
 
+            RemoveStockPile(grid);
+        }
+
+        private static void RemoveStockPile(MyObjectBuilder_CubeGrid grid)
+        {
+            if (grid == null)
+            {
+                return;
+            }
             var projectedBlocks = grid.CubeBlocks;
 
             foreach (var block in projectedBlocks)
             {
+                if(block is MyObjectBuilder_ProjectorBase)
+                {
+                    var myObjectBuilderCubeGrid = ((MyObjectBuilder_ProjectorBase) block).ProjectedGrids;
+                    foreach (var objectBuilderCubeGrid in myObjectBuilderCubeGrid)
+                    {
+                        RemoveStockPile(objectBuilderCubeGrid);
+                    }
+                }
                 if (block.ConstructionStockpile == null || block.ConstructionStockpile.Items.Length == 0)
                 {
                     continue;
                 }
-
                 block.ConstructionStockpile = null;
             }
         }
