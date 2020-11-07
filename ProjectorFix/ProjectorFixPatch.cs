@@ -14,7 +14,8 @@ namespace ProjectorFix
             typeof(MyProjectorBase).GetMethod("OnNewBlueprintSuccess", BindingFlags.NonPublic | BindingFlags.Instance);
 
         public static readonly Logger Log = LogManager.GetCurrentClassLogger();
-
+        public static readonly int MaxDeep = 5;
+        public static int CurrentDeep = 5;
         public static void Patch(PatchContext ctx)
         {
             Log.Info("Patch init");
@@ -35,12 +36,16 @@ namespace ProjectorFix
             }
 
             var grid = projectedGrids[0];
-
+            CurrentDeep = 0;
             RemoveStockPile(grid);
         }
 
         private static void RemoveStockPile(MyObjectBuilder_CubeGrid grid)
         {
+            if (CurrentDeep > MaxDeep)
+            {
+                return;
+            }
             if (grid == null)
             {
                 return;
@@ -51,9 +56,14 @@ namespace ProjectorFix
             {
                 if(block is MyObjectBuilder_ProjectorBase)
                 {
-                    var myObjectBuilderCubeGrid = ((MyObjectBuilder_ProjectorBase) block).ProjectedGrids;
-                    foreach (var objectBuilderCubeGrid in myObjectBuilderCubeGrid)
+                    var projectedGridsOfProjector = ((MyObjectBuilder_ProjectorBase) block).ProjectedGrids;
+                    if (projectedGridsOfProjector == null)
                     {
+                        return;
+                    }
+                    foreach (var objectBuilderCubeGrid in projectedGridsOfProjector)
+                    {
+                        CurrentDeep++;
                         RemoveStockPile(objectBuilderCubeGrid);
                     }
                 }
